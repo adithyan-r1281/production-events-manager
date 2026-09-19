@@ -150,18 +150,45 @@ class Production_Events_Registration_Service {
 
 		$capacity = $this->event_repository->get_capacity( $event_id );
 
-		if ( $capacity > 0 ) {
-			$registration_count =
-				$this->registration_repository->count_registrations( $event_id );
+        $registered_at = current_time( 'mysql' );
 
-			if ( $registration_count >= $capacity ) {
-				return new WP_Error(
-					'capacity_reached',
-					__( 'Registration is unavailable because this event has reached capacity.', 'production-events-manager' ),
-					array( 'status' => 403 )
-				);
-			}
-		}
+        if ( $capacity > 0 ) {
+            $registration_id =
+                $this->registration_repository->insert_registration_with_capacity(
+                    $event_id,
+                    $name,
+                    $email,
+                    $registered_at,
+                    $capacity
+                );
+        } else {
+            $registration_id =
+                $this->registration_repository->insert_registration(
+                    $event_id,
+                    $name,
+                    $email,
+                    $registered_at
+                );
+        }
+
+        if ( is_wp_error( $registration_id ) ) {
+            return $registration_id;
+        }
+
+        if ( false === $registration_id ) {
+            return new WP_Error(
+                'registration_failed',
+                __(
+                    'Unable to complete registration. Please try again.',
+                    'production-events-manager'
+                ),
+                array(
+                    'status' => 500,
+                )
+            );
+        }
+
+        return $registration_id;		
 
 		$registered_at = current_time( 'mysql' );
 

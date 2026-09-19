@@ -89,12 +89,14 @@ class Production_Events_REST_Controller {
 		}
 
 		return new WP_REST_Response(
-			array(
-				'success'        => true,
-				'registration_id' => $result,
-				'message'        => __( 'Registration successful.', 'production-events-manager' ),
-			),
-			201
-		);
+            array(
+                'success' => true,
+                'message' => __(
+                    'Registration successful.',
+                    'production-events-manager'
+                ),
+            ),
+            201
+        );
 	}
 }

@@ -15,7 +15,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Core plugin classes.
  */
 require_once plugin_dir_path( __FILE__ )
-	. 'includes/class-activator.php';
+    . 'includes/class-activator.php';
+
+require_once plugin_dir_path( __FILE__ )
+	. 'includes/class-deactivator.php';
 
 require_once plugin_dir_path( __FILE__ )
 	. 'includes/class-event-post-type.php';
@@ -67,11 +70,37 @@ register_activation_hook(
 	)
 );
 
+register_deactivation_hook(
+	__FILE__,
+	array( 'Production_Events_Deactivator', 'deactivate' )
+);
+
 /*
  * Event post type.
  */
 $event_post_type = new Production_Events_Post_Type();
 $event_post_type->register();
+
+add_action(
+	'init',
+	function () {
+
+		if (
+			! get_option(
+				'production_events_flush_rewrite_rules'
+			)
+		) {
+			return;
+		}
+
+		flush_rewrite_rules();
+
+		delete_option(
+			'production_events_flush_rewrite_rules'
+		);
+	},
+	99
+);
 
 /*
  * Event metadata.

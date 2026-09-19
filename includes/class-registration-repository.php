@@ -97,6 +97,182 @@ class Production_Events_Registration_Repository {
 	}
 
 	/**
+	 * Insert a registration while enforcing event capacity atomically.
+	 *
+	 * The event post row is locked for the duration of the transaction.
+	 * This prevents concurrent registrations from exceeding capacity.
+	 *
+	 * @param int    $event_id      Event ID.
+	 * @param string $name          Registrant name.
+	 * @param string $email         Normalized email address.
+	 * @param string $registered_at Registration datetime.
+	 * @param int    $capacity      Event capacity. Zero means unlimited.
+	 * @return int|WP_Error|false Registration ID, WP_Error for a known
+	 *                           registration conflict, or false on DB failure.
+	 */
+	public function insert_registration_with_capacity(
+		$event_id,
+		$name,
+		$email,
+		$registered_at,
+		$capacity
+	) {
+
+		global $wpdb;
+
+		$event_id = absint( $event_id );
+		$capacity = absint( $capacity );
+
+		if ( ! $event_id ) {
+			return false;
+		}
+
+		$registrations_table = $this->get_table_name();
+		$posts_table         = $wpdb->posts;
+
+		$transaction_started = $wpdb->query( 'START TRANSACTION' );
+
+		if ( false === $transaction_started ) {
+			return false;
+		}
+
+		/*
+		 * Lock the event row so concurrent registrations for the same
+		 * event are serialized while capacity is checked and updated.
+		 */
+		$event_exists = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT ID
+				FROM {$posts_table}
+				WHERE ID = %d
+				AND post_type = %s
+				FOR UPDATE",
+				$event_id,
+				'pem_event'
+			)
+		);
+
+		if ( ! $event_exists ) {
+			$wpdb->query( 'ROLLBACK' );
+
+			return false;
+		}
+
+		/*
+		 * Check the duplicate while the event row is locked.
+		 *
+		 * The unique database constraint remains the final safeguard.
+		 */
+		$existing_registration = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT id
+				FROM {$registrations_table}
+				WHERE event_id = %d
+				AND email = %s
+				LIMIT 1",
+				$event_id,
+				$email
+			)
+		);
+
+		if ( null !== $existing_registration ) {
+			$wpdb->query( 'ROLLBACK' );
+
+			return new WP_Error(
+				'duplicate_registration',
+				__(
+					'You are already registered for this event.',
+					'production-events-manager'
+				),
+				array(
+					'status' => 409,
+				)
+			);
+		}
+
+		/*
+		 * Capacity is checked only for limited events.
+		 * A capacity of zero means unlimited.
+		 */
+		if ( $capacity > 0 ) {
+			$registration_count = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*)
+					FROM {$registrations_table}
+					WHERE event_id = %d",
+					$event_id
+				)
+			);
+
+			if ( $registration_count >= $capacity ) {
+				$wpdb->query( 'ROLLBACK' );
+
+				return new WP_Error(
+					'capacity_reached',
+					__(
+						'Registration is unavailable because this event has reached capacity.',
+						'production-events-manager'
+					),
+					array(
+						'status' => 403,
+					)
+				);
+			}
+		}
+
+		$result = $wpdb->insert(
+			$registrations_table,
+			array(
+				'event_id'      => $event_id,
+				'name'          => $name,
+				'email'         => $email,
+				'registered_at' => $registered_at,
+			),
+			array(
+				'%d',
+				'%s',
+				'%s',
+				'%s',
+			)
+		);
+
+		if ( false === $result ) {
+			$wpdb->query( 'ROLLBACK' );
+
+			/*
+			 * The unique constraint is still the final duplicate
+			 * protection in case another database-level conflict occurs.
+			 */
+			if ( $this->registration_exists( $event_id, $email ) ) {
+				return new WP_Error(
+					'duplicate_registration',
+					__(
+						'You are already registered for this event.',
+						'production-events-manager'
+					),
+					array(
+						'status' => 409,
+					)
+				);
+			}
+
+			return false;
+		}
+
+		$registration_id = (int) $wpdb->insert_id;
+
+		$committed = $wpdb->query( 'COMMIT' );
+
+		if ( false === $committed ) {
+			$wpdb->query( 'ROLLBACK' );
+
+			return false;
+		}
+
+		return $registration_id;
+	}
+
+	/**
 	 * Check whether an email is already registered for an event.
 	 *
 	 * Email should already be normalized before calling this method.
