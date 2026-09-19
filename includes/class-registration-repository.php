@@ -56,9 +56,9 @@ class Production_Events_Registration_Repository {
 	/**
 	 * Insert a registration.
 	 *
-	 * @param int    $event_id Event ID.
-	 * @param string $name     Registrant name.
-	 * @param string $email    Normalized email address.
+	 * @param int    $event_id      Event ID.
+	 * @param string $name          Registrant name.
+	 * @param string $email         Normalized email address.
 	 * @param string $registered_at Registration datetime.
 	 * @return int|false Inserted registration ID or false on failure.
 	 */
@@ -76,9 +76,9 @@ class Production_Events_Registration_Repository {
 		$result = $wpdb->insert(
 			$table_name,
 			array(
-				'event_id'     => absint( $event_id ),
-				'name'         => $name,
-				'email'        => $email,
+				'event_id'      => absint( $event_id ),
+				'name'          => $name,
+				'email'         => $email,
 				'registered_at' => $registered_at,
 			),
 			array(
@@ -125,23 +125,111 @@ class Production_Events_Registration_Repository {
 	}
 
 	/**
-	 * Count registrations for an event.
+	 * Get registrations.
 	 *
-	 * @param int $event_id Event ID.
+	 * @param array $args Query arguments.
+	 * @return array
+	 */
+	public function get_registrations( $args = array() ) {
+
+		global $wpdb;
+
+		$defaults = array(
+			'page'     => 1,
+			'per_page' => 20,
+			'event_id' => 0,
+			'search'   => '',
+		);
+
+		$args = wp_parse_args( $args, $defaults );
+
+		$page     = max( 1, absint( $args['page'] ) );
+		$per_page = max( 1, absint( $args['per_page'] ) );
+		$offset   = ( $page - 1 ) * $per_page;
+		$event_id = absint( $args['event_id'] );
+		$search   = sanitize_text_field( $args['search'] );
+
+		$table_name = $this->get_table_name();
+
+		$where  = '1=1';
+		$values = array();
+
+		if ( $event_id > 0 ) {
+			$where   .= ' AND event_id = %d';
+			$values[] = $event_id;
+		}
+
+		if ( '' !== $search ) {
+			$where .= ' AND (name LIKE %s OR email LIKE %s)';
+
+			$search_like = '%' . $wpdb->esc_like( $search ) . '%';
+
+			$values[] = $search_like;
+			$values[] = $search_like;
+		}
+
+		$values[] = $per_page;
+		$values[] = $offset;
+
+		$sql = "SELECT
+			id,
+			event_id,
+			name,
+			email,
+			registered_at
+		FROM {$table_name}
+		WHERE {$where}
+		ORDER BY registered_at DESC
+		LIMIT %d OFFSET %d";
+
+		$sql = $wpdb->prepare( $sql, $values );
+
+		return $wpdb->get_results( $sql );
+	}
+
+	/**
+	 * Count registrations.
+	 *
+	 * @param int    $event_id Event ID.
+	 * @param string $search   Search term.
 	 * @return int
 	 */
-	public function count_registrations( $event_id ) {
+	public function count_registrations(
+		$event_id = 0,
+		$search = ''
+	) {
 
 		global $wpdb;
 
 		$table_name = $this->get_table_name();
 
-		$sql = $wpdb->prepare(
-			"SELECT COUNT(*)
+		$event_id = absint( $event_id );
+		$search   = sanitize_text_field( $search );
+
+		$where  = '1=1';
+		$values = array();
+
+		if ( $event_id > 0 ) {
+			$where   .= ' AND event_id = %d';
+			$values[] = $event_id;
+		}
+
+		if ( '' !== $search ) {
+			$where .= ' AND (name LIKE %s OR email LIKE %s)';
+
+			$search_like = '%' . $wpdb->esc_like( $search ) . '%';
+
+			$values[] = $search_like;
+			$values[] = $search_like;
+		}
+
+		$sql = "SELECT COUNT(*)
 			FROM {$table_name}
-			WHERE event_id = %d",
-			absint( $event_id )
-		);
+			WHERE {$where}";
+
+		if ( ! empty( $values ) ) {
+			$sql = $wpdb->prepare( $sql, $values );
+		}
 
 		return (int) $wpdb->get_var( $sql );
 	}
