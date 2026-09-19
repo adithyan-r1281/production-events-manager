@@ -85,6 +85,14 @@ class Production_Events_Event_Frontend {
                 '1.0.0',
                 true
             );
+
+            wp_localize_script(
+                'production-events-registration',
+                'pemRegistration',
+                array(
+                    'restUrl' => esc_url_raw( rest_url( 'production-events/v1/events/' ) ),
+                )
+            );
         }
     }
 }

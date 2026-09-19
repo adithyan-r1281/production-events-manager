@@ -75,7 +75,7 @@ async function handleRegistrationSubmit(event) {
 
 	try {
 		const response = await fetch(
-			'/wp-json/production-events/v1/events/' +
+			    pemRegistration.restUrl +
 				encodeURIComponent(eventId) +
 				'/registrations',
 			{
