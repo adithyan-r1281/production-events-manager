@@ -3,6 +3,8 @@
  * Plugin Name: Production Events Manager
  * Description: A WordPress plugin for managing and displaying events.
  * Version: 1.0.0
+ * Requires at least: 6.0
+ * Requires PHP: 7.4
  * Author: Adithyan R
  * Text Domain: production-events-manager
  */
