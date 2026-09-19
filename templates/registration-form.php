@@ -34,9 +34,11 @@ $status   = isset( $status ) ? $status : '';
 					name="name"
 					required
 					autocomplete="name"
+                    aria-describedby="pem-registration-name-error"
 				/>
 
 				<p
+                    id="pem-registration-name-error"
 					class="pem-field-error"
 					data-field-error="name"
 					aria-live="polite"
@@ -54,9 +56,11 @@ $status   = isset( $status ) ? $status : '';
 					name="email"
 					required
 					autocomplete="email"
+                    aria-describedby="pem-registration-email-error"
 				/>
 
 				<p
+                    id="pem-registration-email-error"
 					class="pem-field-error"
 					data-field-error="email"
 					aria-live="polite"

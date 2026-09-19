@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Production Events Manager
  * Description: A WordPress plugin for managing and displaying events.
- * Version: 1.0.5
- * Author: Your Name
+ * Version: 1.0.0
+ * Author: Adithyan R
  * Text Domain: production-events-manager
  */
 

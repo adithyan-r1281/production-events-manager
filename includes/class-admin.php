@@ -41,6 +41,8 @@ class Production_Events_Admin {
 			'production-event-registrations',
 			array( $this, 'render_registrations_page' )
 		);
+
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
 	}
 
 	/**
@@ -124,7 +126,7 @@ class Production_Events_Admin {
 
 		?>
 
-		<div class="wrap">
+		<div class="wrap pem-registrations-page">
 
 			<h1 class="wp-heading-inline">
 				<?php
@@ -439,4 +441,30 @@ class Production_Events_Admin {
 
 		<?php
 	}
+
+    public function enqueue_admin_styles( $hook ) {
+
+        $screen = get_current_screen();
+
+        $is_event_editor = $screen
+            && 'pem_event' === $screen->post_type
+            && in_array( $hook, array( 'post.php', 'post-new.php' ), true );
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $is_registrations_page = isset( $_GET['page'] )
+            && 'production-event-registrations' === sanitize_key( wp_unslash( $_GET['page'] ) );
+
+        if ( ! $is_event_editor && ! $is_registrations_page ) {
+            return;
+        }
+
+        $css_path = plugin_dir_path( dirname( __FILE__ ) ) . 'assets/css/admin.css';
+
+        wp_enqueue_style(
+            'production-events-admin',
+            plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin.css',
+            array(),
+            file_exists( $css_path ) ? (string) filemtime( $css_path ) : '1.0.0'
+        );
+    }
 }

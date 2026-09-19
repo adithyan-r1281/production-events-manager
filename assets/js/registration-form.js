@@ -59,7 +59,15 @@ async function handleRegistrationSubmit(event) {
 	}
 
 	if (hasErrors) {
-		return;
+		const firstInvalidInput = form.querySelector(
+		'input[aria-invalid="true"]'
+        );
+
+        if (firstInvalidInput) {
+            firstInvalidInput.focus();
+        }
+
+        return;
 	}
 
 	submitButton.disabled = true;

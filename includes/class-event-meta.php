@@ -27,11 +27,6 @@ class Production_Events_Event_Meta {
 		);
 
 		add_action(
-			'admin_notices',
-			array( $this, 'display_date_error' )
-		);
-
-		add_action(
 			'init',
 			array( $this, 'register_meta_fields' )
 		);
@@ -456,41 +451,74 @@ class Production_Events_Event_Meta {
 	}
 
 	/**
-	 * Validate event dates.
-	 *
-	 * @param string $start_datetime Event start date/time.
-	 * @param string $end_datetime   Event end date/time.
-	 * @return bool True if dates are valid.
+ * Validate event dates.
+ *
+ * Both fields are optional, but any supplied value must be valid.
+ * When both values are present, the end must be after the start.
+ *
+ * @param string $start_datetime Event start date/time.
+ * @param string $end_datetime   Event end date/time.
+ * @return bool True if dates are valid.
+ */
+private function validate_dates(
+	$start_datetime,
+	$end_datetime
+) {
+
+	/*
+	 * Both fields are optional.
 	 */
-	private function validate_dates(
-		$start_datetime,
-		$end_datetime
+	if (
+		empty( $start_datetime ) &&
+		empty( $end_datetime )
 	) {
-
-		/*
-		 * Both fields are optional at the metadata level.
-		 */
-		if (
-			empty( $start_datetime ) ||
-			empty( $end_datetime )
-		) {
-			return true;
-		}
-
-		$start = $this->parse_event_datetime(
-			$start_datetime
-		);
-
-		$end = $this->parse_event_datetime(
-			$end_datetime
-		);
-
-		if ( false === $start || false === $end ) {
-			return false;
-		}
-
-		return $end > $start;
+		return true;
 	}
+
+	/*
+	 * Validate the start value when supplied.
+	 */
+	$start = false;
+
+        if ( ! empty( $start_datetime ) ) {
+            $start = $this->parse_event_datetime(
+                $start_datetime
+            );
+
+            if ( false === $start ) {
+                return false;
+            }
+        }
+
+        /*
+        * Validate the end value when supplied.
+        */
+        $end = false;
+
+        if ( ! empty( $end_datetime ) ) {
+            $end = $this->parse_event_datetime(
+                $end_datetime
+            );
+
+            if ( false === $end ) {
+                return false;
+            }
+        }
+
+        /*
+        * If only one date is supplied, it is valid as long as
+        * that individual value parsed successfully.
+        */
+        if ( false === $start || false === $end ) {
+            return true;
+        }
+
+        /*
+        * When both dates are supplied, the event must have a
+        * positive duration.
+        */
+        return $end > $start;
+    }
 
 	/**
 	 * Validate registration closing date/time.
@@ -600,9 +628,9 @@ class Production_Events_Event_Meta {
 					$this,
 					'sanitize_capacity',
 				),
-				'auth_callback'      => function () {
-					return current_user_can( 'edit_posts' );
-				},
+				'auth_callback' => function ( $allowed, $meta_key, $post_id ) {
+                    return current_user_can( 'edit_post', $post_id );
+                },
 			)
 		);
 
