@@ -1,0 +1,73 @@
+.pem-registration {
+	margin-top: 2rem;
+	padding: 1.5rem;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+.pem-registration h2 {
+	margin-top: 0;
+}
+
+.pem-registration-form {
+	max-width: 600px;
+}
+
+.pem-form-field {
+	margin-bottom: 1rem;
+}
+
+.pem-form-field label {
+	display: block;
+	margin-bottom: 0.35rem;
+	font-weight: 600;
+}
+
+.pem-form-field input {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	padding: 0.65rem;
+	border: 1px solid #999;
+	border-radius: 3px;
+	box-sizing: border-box;
+}
+
+.pem-form-field input[aria-invalid="true"] {
+	border-color: #b32d2e;
+}
+
+.pem-field-error {
+	margin: 0.35rem 0 0;
+	color: #b32d2e;
+	font-size: 0.9rem;
+}
+
+.pem-registration-form button {
+	padding: 0.65rem 1.25rem;
+	border: 0;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.pem-registration-form button:disabled {
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+
+.pem-registration-message {
+	margin-top: 1rem;
+	font-weight: 600;
+}
+
+.pem-registration-message.is-success {
+	color: #287d3c;
+}
+
+.pem-registration-message.is-error {
+	color: #b32d2e;
+}
+
+.pem-registration-unavailable {
+	margin-top: 1rem;
+}

@@ -228,4 +228,13 @@ $capacity = $event_repository->get_capacity( $event_id );
 
 </main>
 
+<?php
+    $registration_form = plugin_dir_path( dirname( __FILE__ ) )
+        . 'templates/registration-form.php';
+
+    if ( file_exists( $registration_form ) ) {
+        include $registration_form;
+    }
+?>
+
 <?php get_footer(); ?>

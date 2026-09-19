@@ -18,6 +18,11 @@ class Production_Events_Event_Frontend {
 			'template_include',
 			array( $this, 'load_event_template' )
 		);
+
+        add_action(
+            'wp_enqueue_scripts',
+            array( $this, 'enqueue_registration_assets' )
+        );
 	}
 
 	/**
@@ -50,4 +55,33 @@ class Production_Events_Event_Frontend {
 
 		return $template;
 	}
+
+    /**
+     * Enqueue registration assets.
+     *
+     * @return void
+     */
+    public function enqueue_registration_assets() {
+
+        if ( ! is_singular( 'pem_event' ) ) {
+            return;
+        }
+
+        wp_enqueue_script(
+            'production-events-registration',
+            plugin_dir_url( dirname( __FILE__ ) )
+                . 'assets/js/registration-form.js',
+            array(),
+            '1.0.0',
+            true
+        );
+
+        wp_enqueue_style(
+            'production-events-registration',
+            plugin_dir_url( dirname( __FILE__ ) )
+                . 'assets/css/event-registration.css',
+            array(),
+            '1.0.0'
+        );
+    }
 }
