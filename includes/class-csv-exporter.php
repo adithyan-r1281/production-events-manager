@@ -95,7 +95,7 @@ class Production_Events_CSV_Exporter {
 		$registrations = $this->registration_repository->get_registrations(
 			array(
 				'page'     => 1,
-				'per_page' => 100000,
+				'per_page' => 1000,
 				'event_id' => $selected_event,
 				'search'   => $search,
 			)
