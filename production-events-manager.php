@@ -36,14 +36,48 @@ $event_meta->register();
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-event-lifecycle.php';
 
-$event_lifecycle = new Production_Events_Event_Lifecycle();
+// $event_lifecycle = new Production_Events_Event_Lifecycle();
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-event-repository.php';
 
-$event_repository = new Production_Events_Event_Repository();
+// $event_repository = new Production_Events_Event_Repository();
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-event-frontend.php';
 
 $event_frontend = new Production_Events_Event_Frontend();
 
 $event_frontend->register();
+
+require_once plugin_dir_path( __FILE__ )
+	. 'includes/class-registration-repository.php';
+
+require_once plugin_dir_path( __FILE__ )
+	. 'includes/class-registration-service.php';
+
+require_once plugin_dir_path( __FILE__ )
+	. 'includes/class-rest-controller.php';
+
+
+$event_repository = new Production_Events_Event_Repository();
+
+$event_lifecycle = new Production_Events_Event_Lifecycle();
+
+$registration_repository =
+	new Production_Events_Registration_Repository();
+
+$registration_service =
+	new Production_Events_Registration_Service(
+		$event_repository,
+		$event_lifecycle,
+		$registration_repository
+	);
+
+$rest_controller =
+	new Production_Events_REST_Controller(
+		$registration_service
+	);
+
+add_action(
+	'rest_api_init',
+	array( $rest_controller, 'register_routes' )
+);
