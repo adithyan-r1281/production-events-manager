@@ -189,25 +189,5 @@ class Production_Events_Registration_Service {
         }
 
         return $registration_id;		
-
-		$registered_at = current_time( 'mysql' );
-
-		$registration_id =
-			$this->registration_repository->insert_registration(
-				$event_id,
-				$name,
-				$email,
-				$registered_at
-			);
-
-		if ( false === $registration_id ) {
-			return new WP_Error(
-				'registration_failed',
-				__( 'Unable to complete registration. Please try again.', 'production-events-manager' ),
-				array( 'status' => 500 )
-			);
-		}
-
-		return $registration_id;
 	}
 }
