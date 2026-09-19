@@ -1,0 +1,807 @@
+/**
+ * Production Events Manager - frontend styles
+ *
+ * Covers the events archive, the single event page and the registration form.
+ * Drop-in replacement for assets/css/event-registration.css.
+ *
+ * To re-brand, change the custom properties in the "Design tokens" block.
+ * Text that sits directly on the page background inherits the theme colour;
+ * cards and panels set their own surface and text colours, so the design
+ * stays readable on both light and dark themes.
+ */
+
+
+/* ==========================================================================
+   Design tokens
+   ========================================================================== */
+
+.pem-events-archive,
+.pem-event-single,
+.pem-registration {
+	--pem-accent: #c2255c;
+	--pem-accent-strong: #a61e4d;
+	--pem-accent-ring: rgba(194, 37, 92, 0.28);
+
+	--pem-ink: #161a22;
+	--pem-muted: #5a6473;
+	--pem-surface: #ffffff;
+	--pem-surface-alt: #f5f6f8;
+	--pem-border: #dde1e7;
+	--pem-field-border: #7b8594;
+
+	--pem-danger: #b42318;
+	--pem-danger-ink: #912018;
+	--pem-danger-soft: #fef3f2;
+	--pem-danger-border: #fecdca;
+	--pem-danger-ring: rgba(180, 35, 24, 0.24);
+
+	--pem-success-ink: #067647;
+	--pem-success-soft: #ecfdf3;
+	--pem-success-border: #abefc6;
+
+	--pem-radius-lg: 20px;
+	--pem-radius: 16px;
+	--pem-radius-sm: 10px;
+
+	--pem-shadow: 0 10px 28px -14px rgba(22, 26, 34, 0.35);
+
+	box-sizing: border-box;
+}
+
+.pem-events-archive *,
+.pem-events-archive *::before,
+.pem-events-archive *::after,
+.pem-event-single *,
+.pem-event-single *::before,
+.pem-event-single *::after,
+.pem-registration *,
+.pem-registration *::before,
+.pem-registration *::after {
+	box-sizing: border-box;
+}
+
+
+/* ==========================================================================
+   Events archive
+   ========================================================================== */
+
+.pem-events-archive {
+	max-width: 960px;
+	margin: 0 auto;
+	padding: clamp(2rem, 6vw, 4.5rem) 1.25rem;
+}
+
+.pem-events-archive .pem-events-header {
+	margin: 0 0 2.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+	border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.pem-events-archive .pem-events-header h1 {
+	margin: 0;
+	font-size: clamp(2.25rem, 5.5vw, 3.5rem);
+	font-weight: 700;
+	line-height: 1.05;
+	letter-spacing: -0.03em;
+	text-wrap: balance;
+}
+
+.pem-events-archive .pem-events-list {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+/* Event row */
+
+.pem-events-archive .pem-event-card {
+	position: relative;
+	display: flex;
+	align-items: stretch;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	color: var(--pem-ink);
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-border);
+	border-radius: var(--pem-radius);
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pem-events-archive .pem-event-card:hover {
+	border-color: var(--pem-accent);
+	box-shadow: var(--pem-shadow);
+}
+
+.pem-events-archive .pem-event-card:has(:focus-visible) {
+	outline: 3px solid var(--pem-accent-ring);
+	outline-offset: 2px;
+}
+
+.pem-events-archive .pem-event-card-image {
+	flex: 0 0 min(280px, 38%);
+	overflow: hidden;
+	background: var(--pem-surface-alt);
+}
+
+.pem-events-archive .pem-event-card-image a {
+	display: block;
+	height: 100%;
+}
+
+.pem-events-archive .pem-event-card-image img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	min-height: 200px;
+	max-width: none;
+	object-fit: cover;
+	transition: transform 0.5s ease;
+}
+
+.pem-events-archive .pem-event-card:hover .pem-event-card-image img {
+	transform: scale(1.03);
+}
+
+.pem-events-archive .pem-event-card-content {
+	display: flex;
+	flex: 1 1 0;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.5rem 1.75rem 1.75rem;
+}
+
+.pem-events-archive .pem-event-card-title {
+	margin: 0 0 0.75rem;
+	font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	color: var(--pem-ink);
+}
+
+.pem-events-archive .pem-event-card-title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.pem-events-archive .pem-event-card:hover .pem-event-card-title a {
+	color: var(--pem-accent-strong);
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 0.2em;
+}
+
+/* Date and venue lines: muted label, readable value */
+
+.pem-events-archive .pem-event-card-date,
+.pem-events-archive .pem-event-card-venue {
+	display: flex;
+	gap: 0.75rem;
+	margin: 0;
+	font-size: 0.9375rem;
+	line-height: 1.55;
+	color: var(--pem-ink);
+}
+
+.pem-events-archive .pem-event-card-date strong,
+.pem-events-archive .pem-event-card-venue strong {
+	flex: 0 0 auto;
+	min-width: 3.75rem;
+	font-weight: 500;
+	color: var(--pem-muted);
+}
+
+/* The start date leads the eye */
+.pem-events-archive .pem-event-card-date:first-of-type {
+	font-weight: 600;
+	color: var(--pem-accent-strong);
+}
+
+.pem-events-archive .pem-event-card-excerpt {
+	flex: 1 1 auto;
+	margin-top: 0.85rem;
+}
+
+.pem-events-archive .pem-event-card-excerpt p {
+	display: -webkit-box;
+	margin: 0;
+	overflow: hidden;
+	font-size: 0.9375rem;
+	line-height: 1.6;
+	color: var(--pem-muted);
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+}
+
+.pem-events-archive .pem-event-card-link {
+	margin: 1.25rem 0 0;
+}
+
+.pem-events-archive .pem-event-card-link a {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.55rem 1.1rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--pem-ink);
+	text-decoration: none;
+	border: 1.5px solid var(--pem-ink);
+	border-radius: 999px;
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Makes the whole row clickable */
+.pem-events-archive .pem-event-card-link a::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+}
+
+.pem-events-archive .pem-event-card:hover .pem-event-card-link a,
+.pem-events-archive .pem-event-card-link a:focus-visible {
+	color: #ffffff;
+	background: var(--pem-ink);
+}
+
+/* Pagination */
+
+.pem-events-archive .pem-events-pagination {
+	margin-top: 3rem;
+}
+
+.pem-events-archive .pem-events-pagination ul {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pem-events-archive .pem-events-pagination li {
+	margin: 0;
+	padding: 0;
+}
+
+.pem-events-archive .pem-events-pagination a.page-numbers,
+.pem-events-archive .pem-events-pagination span.page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 2.75rem;
+	height: 2.75rem;
+	padding: 0 0.9rem;
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--pem-ink);
+	text-decoration: none;
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-border);
+	border-radius: var(--pem-radius-sm);
+	transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.pem-events-archive .pem-events-pagination a.page-numbers:hover {
+	color: var(--pem-accent-strong);
+	border-color: var(--pem-accent);
+}
+
+.pem-events-archive .pem-events-pagination a.page-numbers:focus-visible {
+	outline: 3px solid var(--pem-accent-ring);
+	outline-offset: 2px;
+}
+
+.pem-events-archive .pem-events-pagination span.page-numbers.current {
+	color: #ffffff;
+	background: var(--pem-accent);
+	border-color: var(--pem-accent);
+}
+
+.pem-events-archive .pem-events-pagination span.page-numbers.dots {
+	background: transparent;
+	border-color: transparent;
+	color: inherit;
+}
+
+/* Empty state */
+
+.pem-events-archive .pem-no-events {
+	margin: 0;
+	padding: clamp(2rem, 8vw, 4rem) 1.5rem;
+	font-size: 1.0625rem;
+	line-height: 1.5;
+	text-align: center;
+	color: var(--pem-muted);
+	background: var(--pem-surface-alt);
+	border: 1px dashed var(--pem-field-border);
+	border-radius: var(--pem-radius);
+}
+
+
+/* ==========================================================================
+   Single event
+   ========================================================================== */
+
+.pem-event-single {
+	max-width: 800px;
+	margin: 0 auto;
+	padding: clamp(2rem, 6vw, 4rem) 1.25rem 0;
+}
+
+/* "Event not found" state */
+.pem-event-single > h1 {
+	margin: 0 0 1rem;
+	font-size: clamp(2.25rem, 6vw, 3.75rem);
+	font-weight: 700;
+	line-height: 1.04;
+	letter-spacing: -0.03em;
+}
+
+.pem-event-single .pem-event-header {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 1rem;
+	margin: 0 0 2rem;
+}
+
+.pem-event-single .pem-event-title {
+	margin: 0;
+	font-size: clamp(2.25rem, 6vw, 3.75rem);
+	font-weight: 700;
+	line-height: 1.04;
+	letter-spacing: -0.03em;
+	text-wrap: balance;
+}
+
+/* Status badge sits above the title */
+.pem-event-single .pem-event-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	order: -1;
+	margin: 0;
+	padding: 0.35rem 0.9rem 0.35rem 0.7rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--pem-ink);
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-border);
+	border-radius: 999px;
+}
+
+.pem-event-single .pem-event-status::before {
+	content: "";
+	flex: none;
+	width: 0.55rem;
+	height: 0.55rem;
+	background: var(--pem-accent);
+	border-radius: 50%;
+}
+
+.pem-event-single .pem-event-status strong {
+	font-weight: 500;
+	color: var(--pem-muted);
+}
+
+/*
+ * Optional: colour the status dot per status. These only apply if the template
+ * adds a modifier class, e.g. pem-event-status--upcoming. Harmless otherwise.
+ */
+.pem-event-single .pem-event-status--upcoming::before {
+	background: #067647;
+}
+
+.pem-event-single .pem-event-status--started::before {
+	background: var(--pem-accent);
+}
+
+.pem-event-single .pem-event-status--registration_closed::before {
+	background: #b54708;
+}
+
+.pem-event-single .pem-event-status--expired::before {
+	background: var(--pem-muted);
+}
+
+.pem-event-single .pem-event-status--cancelled::before {
+	background: var(--pem-danger);
+}
+
+.pem-event-single .pem-event-featured-image {
+	margin: 0 0 2rem;
+	overflow: hidden;
+	aspect-ratio: 16 / 9;
+	background: var(--pem-surface-alt);
+	border-radius: var(--pem-radius);
+}
+
+.pem-event-single .pem-event-featured-image img {
+	display: block;
+	width: 100%;
+	max-width: none;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Fact sheet: one panel, one row per fact */
+
+.pem-event-single .pem-event-details {
+	margin: 0 0 2.5rem;
+	overflow: hidden;
+	color: var(--pem-ink);
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-border);
+	border-radius: var(--pem-radius);
+}
+
+.pem-event-single .pem-event-details > p {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1.5rem;
+	margin: 0;
+	padding: 1rem 1.5rem;
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1.45;
+	text-align: right;
+}
+
+.pem-event-single .pem-event-details > p + p {
+	border-top: 1px solid var(--pem-border);
+}
+
+.pem-event-single .pem-event-details > p strong {
+	flex: 0 0 auto;
+	font-weight: 500;
+	text-align: left;
+	color: var(--pem-muted);
+}
+
+/* Description: theme colours and font, comfortable measure */
+
+.pem-event-single .pem-event-description {
+	max-width: 68ch;
+	font-size: 1.0625rem;
+	line-height: 1.75;
+}
+
+.pem-event-single .pem-event-description > :first-child {
+	margin-top: 0;
+}
+
+.pem-event-single .pem-event-description > :last-child {
+	margin-bottom: 0;
+}
+
+.pem-event-single .pem-event-description p {
+	margin: 0 0 1.25em;
+}
+
+.pem-event-single .pem-event-description h2,
+.pem-event-single .pem-event-description h3,
+.pem-event-single .pem-event-description h4 {
+	margin: 2em 0 0.6em;
+	line-height: 1.2;
+	letter-spacing: -0.015em;
+}
+
+.pem-event-single .pem-event-description ul,
+.pem-event-single .pem-event-description ol {
+	margin: 0 0 1.25em;
+	padding-left: 1.4em;
+}
+
+.pem-event-single .pem-event-description li + li {
+	margin-top: 0.35em;
+}
+
+.pem-event-single .pem-event-description a {
+	text-underline-offset: 0.18em;
+}
+
+.pem-event-single .pem-event-description img {
+	max-width: 100%;
+	height: auto;
+	border-radius: var(--pem-radius-sm);
+}
+
+.pem-event-single .pem-event-description blockquote {
+	margin: 1.75em 0;
+	padding: 0.25em 0 0.25em 1.25em;
+	border-left: 3px solid var(--pem-accent);
+}
+
+
+/* ==========================================================================
+   Registration
+   ========================================================================== */
+
+/* Rendered after </main>, so it sizes and centres itself (760px = the event
+   column: 800px max-width minus its 1.25rem side padding) */
+.pem-registration {
+	width: min(760px, calc(100% - 2.5rem));
+	margin: 3rem auto 5rem;
+	padding: clamp(1.5rem, 5vw, 2.5rem);
+	color: var(--pem-ink);
+	background: var(--pem-surface-alt);
+	border: 1px solid var(--pem-border);
+	border-radius: var(--pem-radius-lg);
+}
+
+.pem-registration h2 {
+	margin: 0 0 1.5rem;
+	font-size: clamp(1.5rem, 3.5vw, 1.875rem);
+	font-weight: 700;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	color: var(--pem-ink);
+}
+
+.pem-registration .pem-registration-form {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	column-gap: 1.25rem;
+	max-width: none;
+	margin: 0;
+}
+
+@media (min-width: 640px) {
+	.pem-registration .pem-registration-form {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.pem-registration .pem-form-field {
+	margin: 0 0 1.25rem;
+}
+
+.pem-registration .pem-form-field label {
+	display: block;
+	margin: 0 0 0.4rem;
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--pem-ink);
+}
+
+.pem-registration .pem-form-field input {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	margin: 0;
+	padding: 0.8rem 1rem;
+	font: inherit;
+	font-size: 1rem;
+	line-height: 1.4;
+	color: var(--pem-ink);
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-field-border);
+	border-radius: var(--pem-radius-sm);
+	box-shadow: none;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pem-registration .pem-form-field input:hover {
+	border-color: var(--pem-ink);
+}
+
+.pem-registration .pem-form-field input:focus {
+	outline: 2px solid transparent;
+	border-color: var(--pem-accent);
+	box-shadow: 0 0 0 4px var(--pem-accent-ring);
+}
+
+.pem-registration .pem-form-field input[aria-invalid="true"] {
+	border-color: var(--pem-danger);
+}
+
+.pem-registration .pem-form-field input[aria-invalid="true"]:focus {
+	box-shadow: 0 0 0 4px var(--pem-danger-ring);
+}
+
+.pem-registration .pem-field-error {
+	margin: 0.4rem 0 0;
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.4;
+	color: var(--pem-danger);
+}
+
+/* Keep the live region in the DOM but take no space while empty */
+.pem-registration .pem-field-error:empty {
+	margin: 0;
+}
+
+/* Submit button */
+
+.pem-registration .pem-registration-form button {
+	display: inline-flex;
+	grid-column: 1 / -1;
+	align-items: center;
+	justify-content: center;
+	justify-self: start;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0.85rem 1.75rem;
+	font: inherit;
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1.2;
+	letter-spacing: 0;
+	color: #ffffff;
+	background: var(--pem-accent);
+	border: 0;
+	border-radius: var(--pem-radius-sm);
+	cursor: pointer;
+	transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.pem-registration .pem-registration-form button:hover:not(:disabled) {
+	background: var(--pem-accent-strong);
+}
+
+.pem-registration .pem-registration-form button:active:not(:disabled) {
+	transform: translateY(1px);
+}
+
+.pem-registration .pem-registration-form button:focus-visible {
+	outline: 3px solid var(--pem-accent-ring);
+	outline-offset: 2px;
+}
+
+.pem-registration .pem-registration-form button:disabled {
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+/* Spinner while the request is in flight (the script disables the button) */
+.pem-registration .pem-registration-form button:disabled::after {
+	content: "";
+	flex: none;
+	width: 1em;
+	height: 1em;
+	border: 2px solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
+	animation: pem-spin 0.7s linear infinite;
+}
+
+@keyframes pem-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Status message */
+
+.pem-registration .pem-registration-message {
+	grid-column: 1 / -1;
+	margin: 1rem 0 0;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	line-height: 1.5;
+	color: var(--pem-muted);
+}
+
+.pem-registration .pem-registration-message:empty {
+	margin: 0;
+}
+
+.pem-registration .pem-registration-message.is-success,
+.pem-registration .pem-registration-message.is-error {
+	padding: 0.85rem 1rem;
+	font-weight: 600;
+	border: 1px solid;
+	border-radius: var(--pem-radius-sm);
+}
+
+.pem-registration .pem-registration-message.is-success {
+	color: var(--pem-success-ink);
+	background: var(--pem-success-soft);
+	border-color: var(--pem-success-border);
+}
+
+.pem-registration .pem-registration-message.is-error {
+	color: var(--pem-danger-ink);
+	background: var(--pem-danger-soft);
+	border-color: var(--pem-danger-border);
+}
+
+.pem-registration .pem-registration-message:focus {
+	outline: none;
+}
+
+.pem-registration .pem-registration-message:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+/* Registration closed / not available */
+
+.pem-registration .pem-registration-unavailable {
+	margin: 0;
+	padding: 1rem 1.25rem;
+	font-size: 1rem;
+	line-height: 1.5;
+	color: var(--pem-muted);
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-border);
+	border-radius: var(--pem-radius-sm);
+}
+
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 720px) {
+	.pem-events-archive .pem-event-card {
+		flex-direction: column;
+	}
+
+	.pem-events-archive .pem-event-card-image {
+		flex: none;
+		width: 100%;
+		aspect-ratio: 16 / 9;
+	}
+
+	.pem-events-archive .pem-event-card-image img {
+		min-height: 0;
+	}
+
+	.pem-events-archive .pem-event-card-content {
+		padding: 1.25rem 1.25rem 1.5rem;
+	}
+}
+
+@media (max-width: 560px) {
+	.pem-event-single .pem-event-details > p {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.15rem;
+		padding: 0.9rem 1.25rem;
+		text-align: left;
+	}
+}
+
+@media (max-width: 639px) {
+	.pem-registration .pem-registration-form button {
+		justify-self: stretch;
+		width: 100%;
+	}
+}
+
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	.pem-events-archive .pem-event-card,
+	.pem-events-archive .pem-event-card-image img,
+	.pem-events-archive .pem-event-card-link a,
+	.pem-events-archive .pem-events-pagination a.page-numbers,
+	.pem-registration .pem-form-field input,
+	.pem-registration .pem-registration-form button {
+		transition: none;
+	}
+
+	.pem-events-archive .pem-event-card:hover .pem-event-card-image img,
+	.pem-registration .pem-registration-form button:active:not(:disabled) {
+		transform: none;
+	}
+
+	/* Keep a slow spinner so progress is still visible */
+	.pem-registration .pem-registration-form button:disabled::after {
+		animation-duration: 1.8s;
+	}
+}
