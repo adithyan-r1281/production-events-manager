@@ -11,6 +11,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once plugin_dir_path( __FILE__ )
+	. 'includes/class-activator.php';
+
+    register_activation_hook(
+        __FILE__,
+        array(
+            'Production_Events_Activator',
+            'activate',
+    )
+);
+
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-event-post-type.php';
 
 $event_post_type = new Production_Events_Post_Type();
