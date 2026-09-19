@@ -16,26 +16,35 @@ class Production_Events_Event_Frontend {
 
 		add_filter(
 			'template_include',
-			array( $this, 'load_event_archive_template' )
+			array( $this, 'load_event_template' )
 		);
 	}
 
 	/**
-	 * Load the plugin event archive template.
+	 * Load plugin event templates.
 	 *
 	 * @param string $template Current template path.
 	 * @return string
 	 */
-	public function load_event_archive_template( $template ) {
+	public function load_event_template( $template ) {
 
-		if ( ! is_post_type_archive( 'pem_event' ) ) {
-			return $template;
+		$plugin_template = '';
+
+		if ( is_post_type_archive( 'pem_event' ) ) {
+
+			$plugin_template = plugin_dir_path( dirname( __FILE__ ) )
+				. 'templates/archive-event.php';
+
+		} elseif ( is_singular( 'pem_event' ) ) {
+
+			$plugin_template = plugin_dir_path( dirname( __FILE__ ) )
+				. 'templates/single-event.php';
 		}
 
-		$plugin_template = plugin_dir_path( dirname( __FILE__ ) )
-			. 'templates/archive-event.php';
-
-		if ( file_exists( $plugin_template ) ) {
+		if (
+			! empty( $plugin_template ) &&
+			file_exists( $plugin_template )
+		) {
 			return $plugin_template;
 		}
 
