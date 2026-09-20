@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Production Events Manager
+ * Plugin Name: Events Manager Custom
  * Description: A WordPress plugin for managing and displaying events.
  * Version: 1.0.0
  * Author: Adithyan R
