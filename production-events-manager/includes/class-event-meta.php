@@ -1,0 +1,822 @@
+<?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Handles event metadata.
+ */
+class Production_Events_Event_Meta {
+
+	/**
+	 * Register hooks.
+	 *
+	 * @return void
+	 */
+	public function register() {
+
+		add_action(
+			'add_meta_boxes',
+			array( $this, 'add_meta_boxes' )
+		);
+
+		add_action(
+			'save_post_pem_event',
+			array( $this, 'save_meta' )
+		);
+
+		add_action(
+			'init',
+			array( $this, 'register_meta_fields' )
+		);
+
+		add_filter(
+			'rest_pre_insert_pem_event',
+			array( $this, 'validate_rest_dates' ),
+			10,
+			2
+		);
+
+		add_action(
+			'admin_enqueue_scripts',
+			array( $this, 'enqueue_date_validation_script' )
+		);
+	}
+
+	/**
+	 * Add Event Details meta box.
+	 *
+	 * @return void
+	 */
+	public function add_meta_boxes() {
+
+		add_meta_box(
+			'pem_event_details',
+			'Event Details',
+			array( $this, 'render_meta_box' ),
+			'pem_event',
+			'normal',
+			'high'
+		);
+	}
+
+	/**
+	 * Render Event Details meta box.
+	 *
+	 * @param WP_Post $post Current post.
+	 * @return void
+	 */
+	public function render_meta_box( $post ) {
+
+		wp_nonce_field(
+			'pem_save_event_meta',
+			'pem_event_meta_nonce'
+		);
+
+		$start_datetime = get_post_meta(
+			$post->ID,
+			'pem_start_datetime',
+			true
+		);
+
+		$end_datetime = get_post_meta(
+			$post->ID,
+			'pem_end_datetime',
+			true
+		);
+
+		$capacity = get_post_meta(
+			$post->ID,
+			'pem_capacity',
+			true
+		);
+
+		$registration_closing_datetime = get_post_meta(
+			$post->ID,
+			'pem_registration_closing_datetime',
+			true
+		);
+
+		$cancelled = get_post_meta(
+			$post->ID,
+			'pem_cancelled',
+			true
+		);
+		?>
+
+		<p>
+			<label for="pem_start_datetime">
+				<strong>Start Date &amp; Time</strong>
+			</label>
+		</p>
+
+		<input
+			type="datetime-local"
+			id="pem_start_datetime"
+			name="pem_start_datetime"
+			value="<?php echo esc_attr( $start_datetime ); ?>"
+			class="widefat"
+		>
+
+		<p>
+			<label for="pem_end_datetime">
+				<strong>End Date &amp; Time</strong>
+			</label>
+		</p>
+
+		<input
+			type="datetime-local"
+			id="pem_end_datetime"
+			name="pem_end_datetime"
+			value="<?php echo esc_attr( $end_datetime ); ?>"
+			class="widefat"
+		>
+
+		<p>
+			<label for="pem_capacity">
+				<strong>Capacity</strong>
+			</label>
+		</p>
+
+		<input
+			type="number"
+			id="pem_capacity"
+			name="pem_capacity"
+			value="<?php echo esc_attr( $capacity ); ?>"
+			min="0"
+			step="1"
+			class="widefat"
+			aria-describedby="pem-capacity-error"
+		>
+
+		<p
+			id="pem-capacity-error"
+			class="pem-validation-error"
+			style="display: none;"
+		></p>
+
+		<p class="description">
+			Enter the maximum number of attendees. Use 0 for unlimited capacity.
+		</p>
+
+		<p>
+			<label for="pem_registration_closing_datetime">
+				<strong>Registration Closing Date &amp; Time</strong>
+			</label>
+		</p>
+
+		<input
+			type="datetime-local"
+			id="pem_registration_closing_datetime"
+			name="pem_registration_closing_datetime"
+			value="<?php echo esc_attr( $registration_closing_datetime ); ?>"
+			class="widefat"
+			aria-describedby="pem-registration-closing-error"
+		>
+
+		<p
+			id="pem-registration-closing-error"
+			class="pem-validation-error"
+			style="display: none;"
+		></p>
+
+		<p class="description">
+			Leave empty to keep registration open until another event restriction applies.
+		</p>
+
+		<p>
+			<label for="pem_cancelled">
+				<strong>Event Status</strong>
+			</label>
+		</p>
+
+		<label for="pem_cancelled">
+			<input
+				type="checkbox"
+				id="pem_cancelled"
+				name="pem_cancelled"
+				value="1"
+				<?php checked( $cancelled, '1' ); ?>
+			>
+			Event Cancelled
+		</label>
+
+		<p class="description">
+			Mark this event as cancelled. The event will remain published but
+			registration will be disabled.
+		</p>
+
+		<?php
+	}
+
+	/**
+	 * Save Event metadata.
+	 *
+	 * @param int $post_id Event post ID.
+	 * @return void
+	 */
+	public function save_meta( $post_id ) {
+
+		// Prevent autosave from running this function.
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+
+		// Don't save metadata for revisions.
+		if ( wp_is_post_revision( $post_id ) ) {
+			return;
+		}
+
+		// Check the nonce.
+		if (
+			! isset( $_POST['pem_event_meta_nonce'] ) ||
+			! wp_verify_nonce(
+				sanitize_text_field(
+					wp_unslash( $_POST['pem_event_meta_nonce'] )
+				),
+				'pem_save_event_meta'
+			)
+		) {
+			return;
+		}
+
+		// Check user permission.
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		// Check that this is actually an Event.
+		if ( 'pem_event' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		/*
+		 * Get cancellation status.
+		 */
+		$cancelled = isset( $_POST['pem_cancelled'] );
+
+		/*
+		 * Get start date/time.
+		 */
+		$start_datetime = '';
+
+		if ( isset( $_POST['pem_start_datetime'] ) ) {
+			$start_datetime = sanitize_text_field(
+				wp_unslash( $_POST['pem_start_datetime'] )
+			);
+		}
+
+		/*
+		 * Get end date/time.
+		 */
+		$end_datetime = '';
+
+		if ( isset( $_POST['pem_end_datetime'] ) ) {
+			$end_datetime = sanitize_text_field(
+				wp_unslash( $_POST['pem_end_datetime'] )
+			);
+		}
+
+		/*
+		 * Get capacity.
+		 *
+		 * Empty capacity is treated as unlimited (0).
+		 * Any non-empty invalid value is rejected rather than silently
+		 * becoming unlimited.
+		 */
+		$capacity = 0;
+
+		if ( isset( $_POST['pem_capacity'] ) ) {
+			$raw_capacity = wp_unslash( $_POST['pem_capacity'] );
+
+			if ( '' !== $raw_capacity ) {
+				if (
+					! is_string( $raw_capacity ) ||
+					! preg_match( '/^\d+$/', $raw_capacity )
+				) {
+					return;
+				}
+
+				$capacity = (int) $raw_capacity;
+			}
+		}
+
+		/*
+		 * Get registration closing date/time.
+		 */
+		$registration_closing_datetime = '';
+
+		if ( isset( $_POST['pem_registration_closing_datetime'] ) ) {
+			$registration_closing_datetime = sanitize_text_field(
+				wp_unslash( $_POST['pem_registration_closing_datetime'] )
+			);
+		}
+
+		/*
+		 * Validate event dates using the WordPress site timezone.
+		 */
+		if (
+			! $this->validate_dates(
+				$start_datetime,
+				$end_datetime
+			)
+		) {
+			return;
+		}
+
+		/*
+		 * Validate registration closing date/time.
+		 */
+		if (
+			! $this->validate_registration_closing(
+				$registration_closing_datetime,
+				$start_datetime
+			)
+		) {
+			return;
+		}
+
+		/*
+		 * Save start date/time.
+		 */
+		if ( ! empty( $start_datetime ) ) {
+			update_post_meta(
+				$post_id,
+				'pem_start_datetime',
+				$start_datetime
+			);
+		} else {
+			delete_post_meta(
+				$post_id,
+				'pem_start_datetime'
+			);
+		}
+
+		/*
+		 * Save end date/time.
+		 */
+		if ( ! empty( $end_datetime ) ) {
+			update_post_meta(
+				$post_id,
+				'pem_end_datetime',
+				$end_datetime
+			);
+		} else {
+			delete_post_meta(
+				$post_id,
+				'pem_end_datetime'
+			);
+		}
+
+		/*
+		 * Save capacity.
+		 */
+		update_post_meta(
+			$post_id,
+			'pem_capacity',
+			$capacity
+		);
+
+		/*
+		 * Save registration closing date/time.
+		 */
+		if ( ! empty( $registration_closing_datetime ) ) {
+			update_post_meta(
+				$post_id,
+				'pem_registration_closing_datetime',
+				$registration_closing_datetime
+			);
+		} else {
+			delete_post_meta(
+				$post_id,
+				'pem_registration_closing_datetime'
+			);
+		}
+
+		/*
+		 * Save cancellation status.
+		 */
+		update_post_meta(
+			$post_id,
+			'pem_cancelled',
+			$cancelled
+		);
+	}
+
+	/**
+	 * Parse an event datetime using the WordPress site timezone.
+	 *
+	 * @param string $datetime Event datetime.
+	 * @return DateTimeImmutable|false
+	 */
+	private function parse_event_datetime( $datetime ) {
+
+		if ( empty( $datetime ) ) {
+			return false;
+		}
+
+		$timezone = wp_timezone();
+
+		$parsed = DateTimeImmutable::createFromFormat(
+			'!Y-m-d\TH:i',
+			$datetime,
+			$timezone
+		);
+
+		$errors = DateTimeImmutable::getLastErrors();
+
+		if ( false !== $errors ) {
+			if (
+				$errors['warning_count'] > 0 ||
+				$errors['error_count'] > 0
+			) {
+				return false;
+			}
+		}
+
+		if ( false === $parsed ) {
+			return false;
+		}
+
+		/*
+		 * Ensure the input exactly matches the expected datetime-local
+		 * format rather than allowing PHP to normalize invalid dates.
+		 */
+		if ( $parsed->format( 'Y-m-d\TH:i' ) !== $datetime ) {
+			return false;
+		}
+
+		return $parsed;
+	}
+
+	/**
+ * Validate event dates.
+ *
+ * Both fields are optional, but any supplied value must be valid.
+ * When both values are present, the end must be after the start.
+ *
+ * @param string $start_datetime Event start date/time.
+ * @param string $end_datetime   Event end date/time.
+ * @return bool True if dates are valid.
+ */
+private function validate_dates(
+	$start_datetime,
+	$end_datetime
+) {
+
+	/*
+	 * Both fields are optional.
+	 */
+	if (
+		empty( $start_datetime ) &&
+		empty( $end_datetime )
+	) {
+		return true;
+	}
+
+	/*
+	 * Validate the start value when supplied.
+	 */
+	$start = false;
+
+        if ( ! empty( $start_datetime ) ) {
+            $start = $this->parse_event_datetime(
+                $start_datetime
+            );
+
+            if ( false === $start ) {
+                return false;
+            }
+        }
+
+        /*
+        * Validate the end value when supplied.
+        */
+        $end = false;
+
+        if ( ! empty( $end_datetime ) ) {
+            $end = $this->parse_event_datetime(
+                $end_datetime
+            );
+
+            if ( false === $end ) {
+                return false;
+            }
+        }
+
+        /*
+        * If only one date is supplied, it is valid as long as
+        * that individual value parsed successfully.
+        */
+        if ( false === $start || false === $end ) {
+            return true;
+        }
+
+        /*
+        * When both dates are supplied, the event must have a
+        * positive duration.
+        */
+        return $end > $start;
+    }
+
+	/**
+	 * Validate registration closing date/time.
+	 *
+	 * Registration closing time must not be later than
+	 * the event start time.
+	 *
+	 * @param string $closing_datetime Registration closing date/time.
+	 * @param string $start_datetime   Event start date/time.
+	 * @return bool True if valid.
+	 */
+	private function validate_registration_closing(
+		$closing_datetime,
+		$start_datetime
+	) {
+
+		/*
+		 * Registration closing time is optional.
+		 */
+		if ( empty( $closing_datetime ) ) {
+			return true;
+		}
+
+		/*
+		 * Closing time requires a valid event start time.
+		 */
+		if ( empty( $start_datetime ) ) {
+			return false;
+		}
+
+		$closing = $this->parse_event_datetime(
+			$closing_datetime
+		);
+
+		$start = $this->parse_event_datetime(
+			$start_datetime
+		);
+
+		if ( false === $closing || false === $start ) {
+			return false;
+		}
+
+		return $closing <= $start;
+	}
+
+	/**
+	 * Display date validation error.
+	 *
+	 * @return void
+	 */
+	public function display_date_error() {
+
+		$transient_key = 'pem_date_error_' . get_current_user_id();
+
+		if ( ! get_transient( $transient_key ) ) {
+			return;
+		}
+
+		delete_transient( $transient_key );
+
+		?>
+		<div class="notice notice-error is-dismissible">
+			<p>
+				<strong>Event dates are invalid.</strong>
+				End Date &amp; Time must be after Start Date &amp; Time.
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Register event metadata fields.
+	 *
+	 * @return void
+	 */
+	public function register_meta_fields() {
+
+		register_post_meta(
+			'pem_event',
+			'pem_start_datetime',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+			)
+		);
+
+		register_post_meta(
+			'pem_event',
+			'pem_end_datetime',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+			)
+		);
+
+		register_post_meta(
+			'pem_event',
+			'pem_capacity',
+			array(
+				'show_in_rest'       => true,
+				'single'             => true,
+				'type'               => 'integer',
+				'default'            => 0,
+				'sanitize_callback'  => array(
+					$this,
+					'sanitize_capacity',
+				),
+				'auth_callback' => function ( $allowed, $meta_key, $post_id ) {
+                    return current_user_can( 'edit_post', $post_id );
+                },
+			)
+		);
+
+		register_post_meta(
+			'pem_event',
+			'pem_registration_closing_datetime',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+			)
+		);
+
+		register_post_meta(
+			'pem_event',
+			'pem_cancelled',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'boolean',
+				'default'      => false,
+			)
+		);
+	}
+
+	/**
+	 * Sanitize event capacity.
+	 *
+	 * Invalid values are converted to zero only at the REST metadata
+	 * layer after validation has rejected malformed values.
+	 *
+	 * @param mixed $value Capacity value.
+	 * @return int
+	 */
+	public function sanitize_capacity( $value ) {
+
+		if (
+			is_int( $value ) ||
+			(
+				is_string( $value ) &&
+				preg_match( '/^\d+$/', $value )
+			)
+		) {
+			return (int) $value;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Validate event metadata before REST API saves the event.
+	 *
+	 * @param WP_Post         $prepared_post Prepared post object.
+	 * @param WP_REST_Request $request       REST API request.
+	 * @return WP_Post|WP_Error
+	 */
+	public function validate_rest_dates(
+		$prepared_post,
+		$request
+	) {
+
+		$meta = $request->get_param( 'meta' );
+
+		if ( ! is_array( $meta ) ) {
+			return $prepared_post;
+		}
+
+		$start_datetime = isset( $meta['pem_start_datetime'] )
+			? sanitize_text_field(
+				$meta['pem_start_datetime']
+			)
+			: get_post_meta(
+				$prepared_post->ID,
+				'pem_start_datetime',
+				true
+			);
+
+		$end_datetime = isset( $meta['pem_end_datetime'] )
+			? sanitize_text_field(
+				$meta['pem_end_datetime']
+			)
+			: get_post_meta(
+				$prepared_post->ID,
+				'pem_end_datetime',
+				true
+			);
+
+		$registration_closing_datetime = isset(
+			$meta['pem_registration_closing_datetime']
+		)
+			? sanitize_text_field(
+				$meta['pem_registration_closing_datetime']
+			)
+			: get_post_meta(
+				$prepared_post->ID,
+				'pem_registration_closing_datetime',
+				true
+			);
+
+		/*
+		 * Validate capacity when it is supplied through REST.
+		 */
+		if ( isset( $meta['pem_capacity'] ) ) {
+			$capacity = $meta['pem_capacity'];
+
+			if (
+				! is_int( $capacity ) &&
+				!(
+					is_string( $capacity ) &&
+					preg_match( '/^\d+$/', $capacity )
+				)
+			) {
+				return new WP_Error(
+					'pem_invalid_capacity',
+					__(
+						'Capacity must be a whole number greater than or equal to zero.',
+						'production-events-manager'
+					),
+					array(
+						'status' => 400,
+					)
+				);
+			}
+		}
+
+		if (
+			! $this->validate_dates(
+				$start_datetime,
+				$end_datetime
+			)
+		) {
+			return new WP_Error(
+				'pem_invalid_dates',
+				__(
+					'End Date & Time must be after Start Date & Time.',
+					'production-events-manager'
+				),
+				array(
+					'status' => 400,
+				)
+			);
+		}
+
+		if (
+			! $this->validate_registration_closing(
+				$registration_closing_datetime,
+				$start_datetime
+			)
+		) {
+			return new WP_Error(
+				'pem_invalid_registration_closing',
+				__(
+					'Registration Closing Date & Time must not be later than Start Date & Time.',
+					'production-events-manager'
+				),
+				array(
+					'status' => 400,
+				)
+			);
+		}
+
+		return $prepared_post;
+	}
+
+	/**
+	 * Enqueue event date validation script.
+	 *
+	 * @param string $hook Current admin page hook.
+	 * @return void
+	 */
+	public function enqueue_date_validation_script( $hook ) {
+
+		if (
+			'post.php' !== $hook &&
+			'post-new.php' !== $hook
+		) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'pem-event-date-validation',
+			plugin_dir_url( dirname( __FILE__ ) )
+				. 'assets/js/event-date-validation.js',
+			array(),
+			'1.0.1',
+			true
+		);
+	}
+}

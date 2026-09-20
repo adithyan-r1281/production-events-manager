@@ -1,0 +1,587 @@
+/**
+ * Production Events Manager - admin styles
+ *
+ * New file: assets/css/admin.css
+ * Loaded on (1) the Event editor and (2) Events > Registrations.
+ *
+ * Accent colours follow the user's WordPress admin colour scheme via
+ * --wp-admin-theme-color, so the plugin screens feel native in any scheme.
+ */
+
+
+/* ==========================================================================
+   Tokens
+   ========================================================================== */
+
+#pem_event_details,
+.pem-registrations-page {
+	--pem-accent: var(--wp-admin-theme-color, #2271b1);
+	--pem-accent-darker: var(--wp-admin-theme-color-darker-20, #135e96);
+
+	--pem-text: #1d2327;
+	--pem-muted: #646970;
+	--pem-surface: #ffffff;
+	--pem-surface-alt: #f6f7f7;
+	--pem-border: #dcdcde;
+	--pem-field-border: #8c8f94;
+
+	--pem-danger: #d63638;
+	--pem-danger-ink: #8a2424;
+	--pem-danger-soft: #fcf0f1;
+
+	--pem-radius: 10px;
+	--pem-radius-sm: 6px;
+}
+
+
+/* ==========================================================================
+   Event editor: "Event Details" meta box
+   ========================================================================== */
+
+#pem_event_details {
+	/* Lets the layout respond to the meta box width, not the screen width */
+	container: pem-event-details / inline-size;
+}
+
+#pem_event_details .inside {
+	margin: 0;
+	padding: 14px 16px 20px;
+}
+
+/* Field labels (each label sits in its own <p>) */
+
+#pem_event_details .inside > p:has(> label) {
+	margin: 18px 0 6px;
+}
+
+#pem_event_details .inside > p:has(> label[for="pem_start_datetime"]) {
+	margin-top: 0;
+}
+
+#pem_event_details .inside > p > label {
+	display: block;
+	font-size: 13px;
+	line-height: 1.4;
+	color: var(--pem-text);
+}
+
+#pem_event_details .inside > p > label strong {
+	font-weight: 600;
+}
+
+/* Inputs */
+
+#pem_event_details .inside > input.widefat {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	height: 44px;
+	min-height: 44px;
+	margin: 0;
+	padding: 0 12px;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--pem-text);
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-field-border);
+	border-radius: var(--pem-radius-sm);
+	box-shadow: none;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#pem_event_details .inside > input.widefat:hover {
+	border-color: var(--pem-text);
+}
+
+#pem_event_details .inside > input.widefat:focus {
+	border-color: var(--pem-accent);
+	box-shadow: 0 0 0 1px var(--pem-accent);
+	outline: 2px solid transparent;
+}
+
+/* Help text */
+
+#pem_event_details .inside > .description {
+	margin: 6px 0 0;
+	font-size: 12.5px;
+	font-style: normal;
+	line-height: 1.5;
+	color: var(--pem-muted);
+}
+
+/* Validation messages (the script shows/hides these) */
+
+#pem_event_details .pem-validation-error,
+#pem_event_details #pem-date-validation-notice.notice {
+	margin: 8px 0 0;
+	padding: 8px 12px;
+	font-size: 13px;
+	line-height: 1.45;
+	color: var(--pem-danger-ink);
+	background: var(--pem-danger-soft);
+	border: 0;
+	border-left: 3px solid var(--pem-danger);
+	border-radius: 4px;
+	box-shadow: none;
+}
+
+#pem_event_details #pem-date-validation-notice p {
+	margin: 0;
+	padding: 0;
+}
+
+/* Flag the fields that are causing the error */
+
+#pem_event_details .inside:has(#pem-date-validation-notice) #pem_start_datetime,
+#pem_event_details .inside:has(#pem-date-validation-notice) #pem_end_datetime,
+#pem_event_details .inside:has(#pem-capacity-error:not(:empty)) #pem_capacity,
+#pem_event_details .inside:has(#pem-registration-closing-error:not(:empty)) #pem_registration_closing_datetime {
+	border-color: var(--pem-danger);
+}
+
+/* Event cancelled: toggle switch */
+
+#pem_event_details .inside > label[for="pem_cancelled"] {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 14px;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--pem-text);
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-border);
+	border-radius: var(--pem-radius-sm);
+	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+#pem_event_details .inside > label[for="pem_cancelled"]:has(input:checked) {
+	color: var(--pem-danger-ink);
+	background: var(--pem-danger-soft);
+	border-color: var(--pem-danger);
+}
+
+#pem_event_details #pem_cancelled {
+	position: relative;
+	flex: none;
+	width: 40px;
+	height: 22px;
+	margin: 0;
+	background: var(--pem-field-border);
+	border: 0;
+	border-radius: 999px;
+	box-shadow: none;
+	-webkit-appearance: none;
+	appearance: none;
+	transition: background-color 0.15s ease;
+}
+
+#pem_event_details #pem_cancelled::before,
+#pem_event_details #pem_cancelled:checked::before {
+	content: "";
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	float: none;
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	background: #ffffff;
+	border-radius: 50%;
+	transition: transform 0.15s ease;
+}
+
+#pem_event_details #pem_cancelled:checked {
+	background: var(--pem-danger);
+	border: 0;
+}
+
+#pem_event_details #pem_cancelled:checked::before {
+	transform: translateX(18px);
+}
+
+#pem_event_details #pem_cancelled:focus-visible {
+	outline: 2px solid var(--pem-accent);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* Two-column layout once the meta box is wide enough */
+
+@container pem-event-details (min-width: 540px) {
+
+	#pem_event_details .inside {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		column-gap: 20px;
+		align-items: start;
+	}
+
+	#pem_event_details .inside > * {
+		grid-column: 1 / -1;
+	}
+
+	/* Row 1-2: start | end */
+	#pem_event_details .inside > p:has(> label[for="pem_start_datetime"]) {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	#pem_event_details .inside > p:has(> label[for="pem_end_datetime"]) {
+		grid-column: 2;
+		grid-row: 1;
+		margin-top: 0;
+	}
+
+	#pem_event_details #pem_start_datetime {
+		grid-column: 1;
+		grid-row: 2;
+	}
+
+	#pem_event_details #pem_end_datetime {
+		grid-column: 2;
+		grid-row: 2;
+	}
+
+	/* Row 3: date range error (added by the script) */
+	#pem_event_details #pem-date-validation-notice {
+		grid-column: 1 / -1;
+		grid-row: 3;
+	}
+
+	/* Rows 4-7: capacity | registration closing */
+	#pem_event_details .inside > p:has(> label[for="pem_capacity"]) {
+		grid-column: 1;
+		grid-row: 4;
+	}
+
+	#pem_event_details .inside > p:has(> label[for="pem_registration_closing_datetime"]) {
+		grid-column: 2;
+		grid-row: 4;
+	}
+
+	#pem_event_details #pem_capacity {
+		grid-column: 1;
+		grid-row: 5;
+	}
+
+	#pem_event_details #pem_registration_closing_datetime {
+		grid-column: 2;
+		grid-row: 5;
+	}
+
+	#pem_event_details #pem-capacity-error {
+		grid-column: 1;
+		grid-row: 6;
+	}
+
+	#pem_event_details #pem-registration-closing-error {
+		grid-column: 2;
+		grid-row: 6;
+	}
+
+	#pem_event_details #pem-capacity-error + .description {
+		grid-column: 1;
+		grid-row: 7;
+	}
+
+	#pem_event_details #pem-registration-closing-error + .description {
+		grid-column: 2;
+		grid-row: 7;
+	}
+
+	/* Rows 8-10: event status, full width */
+	#pem_event_details .inside > p:has(> label[for="pem_cancelled"]) {
+		grid-row: 8;
+	}
+
+	#pem_event_details .inside > label[for="pem_cancelled"] {
+		grid-row: 9;
+	}
+
+	#pem_event_details .inside > label[for="pem_cancelled"] + .description {
+		grid-row: 10;
+	}
+}
+
+
+/* ==========================================================================
+   Events > Registrations
+   ========================================================================== */
+
+.pem-registrations-page {
+	max-width: 1200px;
+}
+
+.pem-registrations-page h1.wp-heading-inline {
+	font-weight: 600;
+	color: var(--pem-text);
+}
+
+/* Toolbar: filters on the left, pagination on the right */
+
+.pem-registrations-page .tablenav {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	height: auto;
+	margin: 16px 0;
+	padding: 12px;
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-border);
+	border-radius: var(--pem-radius);
+}
+
+.pem-registrations-page .tablenav.bottom {
+	justify-content: flex-end;
+	padding: 0;
+	background: none;
+	border: 0;
+}
+
+.pem-registrations-page .tablenav .actions {
+	display: flex;
+	flex: 1 1 auto;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	float: none;
+	padding: 0;
+}
+
+.pem-registrations-page .tablenav .actions input[type="search"] {
+	flex: 1 1 220px;
+	max-width: 320px;
+}
+
+.pem-registrations-page .tablenav .actions select {
+	flex: 0 1 220px;
+	float: none;
+	max-width: 100%;
+	margin: 0;
+}
+
+.pem-registrations-page .tablenav .actions input[type="search"],
+.pem-registrations-page .tablenav .actions select,
+.pem-registrations-page .tablenav .actions .button {
+	box-sizing: border-box;
+	height: 38px;
+	min-height: 38px;
+	margin: 0;
+	border-radius: var(--pem-radius-sm);
+}
+
+.pem-registrations-page .tablenav .actions .button {
+	padding: 0 14px;
+	line-height: 36px;
+}
+
+.pem-registrations-page .tablenav .actions a.button {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Download icon on the Export CSV button */
+.pem-registrations-page .tablenav .actions a.button::before {
+	content: "";
+	flex: none;
+	width: 16px;
+	height: 16px;
+	background: currentColor;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3v12m0 0-4-4m4 4 4-4M5 21h14' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3v12m0 0-4-4m4 4 4-4M5 21h14' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Pagination */
+
+.pem-registrations-page .tablenav-pages {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	float: none;
+	margin: 0;
+}
+
+.pem-registrations-page .tablenav-pages .page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 36px;
+	height: 36px;
+	padding: 0 10px;
+	box-sizing: border-box;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1;
+	color: var(--pem-text);
+	text-decoration: none;
+	background: var(--pem-surface);
+	border: 1px solid var(--pem-border);
+	border-radius: var(--pem-radius-sm);
+	transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.pem-registrations-page .tablenav-pages a.page-numbers:hover {
+	color: var(--pem-accent);
+	border-color: var(--pem-accent);
+}
+
+.pem-registrations-page .tablenav-pages span.page-numbers.current {
+	color: #ffffff;
+	background: var(--pem-accent);
+	border-color: var(--pem-accent);
+}
+
+.pem-registrations-page .tablenav-pages span.page-numbers.dots {
+	background: transparent;
+	border-color: transparent;
+}
+
+/* Table */
+
+.pem-registrations-page table.widefat {
+	table-layout: fixed;
+	border: 1px solid var(--pem-border);
+	border-radius: var(--pem-radius);
+	border-collapse: separate;
+	border-spacing: 0;
+	background: var(--pem-surface);
+	box-shadow: none;
+}
+
+.pem-registrations-page table.widefat thead th {
+	padding: 12px 16px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--pem-muted);
+	background: var(--pem-surface-alt);
+	border-bottom: 1px solid var(--pem-border);
+}
+
+.pem-registrations-page table.widefat thead th:first-child {
+	border-top-left-radius: calc(var(--pem-radius) - 1px);
+}
+
+.pem-registrations-page table.widefat thead th:last-child {
+	border-top-right-radius: calc(var(--pem-radius) - 1px);
+}
+
+.pem-registrations-page table.widefat thead th:nth-child(1) {
+	width: 26%;
+}
+
+.pem-registrations-page table.widefat thead th:nth-child(2) {
+	width: 20%;
+}
+
+.pem-registrations-page table.widefat thead th:nth-child(3) {
+	width: 36%;
+}
+
+.pem-registrations-page table.widefat thead th:nth-child(4) {
+	width: 18%;
+}
+
+.pem-registrations-page table.widefat tbody td {
+	padding: 14px 16px;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--pem-text);
+	vertical-align: middle;
+	background: transparent;
+	border-bottom: 1px solid var(--pem-surface-alt);
+	box-shadow: none;
+}
+
+.pem-registrations-page table.widefat.striped > tbody > tr:nth-child(odd) {
+	background-color: transparent;
+}
+
+.pem-registrations-page table.widefat tbody tr:hover {
+	background-color: var(--pem-surface-alt);
+}
+
+.pem-registrations-page table.widefat tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.pem-registrations-page table.widefat tbody tr:last-child td:first-child {
+	border-bottom-left-radius: calc(var(--pem-radius) - 1px);
+}
+
+.pem-registrations-page table.widefat tbody tr:last-child td:last-child {
+	border-bottom-right-radius: calc(var(--pem-radius) - 1px);
+}
+
+.pem-registrations-page table.widefat tbody td:nth-child(1) {
+	font-weight: 600;
+}
+
+.pem-registrations-page table.widefat tbody td:nth-child(3) {
+	overflow-wrap: anywhere;
+}
+
+.pem-registrations-page table.widefat tbody td:nth-child(4) {
+	color: var(--pem-muted);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+/* Empty state ("No registrations found.") */
+.pem-registrations-page table.widefat tbody td[colspan] {
+	padding: 56px 16px;
+	font-size: 14px;
+	font-weight: 400;
+	text-align: center;
+	color: var(--pem-muted);
+}
+
+/* Small screens: keep the table readable by letting it scroll sideways */
+
+@media (max-width: 782px) {
+
+	.pem-registrations-page .tablenav .actions input[type="search"],
+	.pem-registrations-page .tablenav .actions select {
+		flex: 1 1 100%;
+		max-width: none;
+	}
+
+	.pem-registrations-page .tablenav .actions .button {
+		flex: 1 1 auto;
+		justify-content: center;
+	}
+
+	.pem-registrations-page table.widefat {
+		display: block;
+		overflow-x: auto;
+		table-layout: auto;
+	}
+
+	.pem-registrations-page table.widefat th,
+	.pem-registrations-page table.widefat td {
+		white-space: nowrap;
+	}
+}
+
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+	#pem_event_details .inside > input.widefat,
+	#pem_event_details .inside > label[for="pem_cancelled"],
+	#pem_event_details #pem_cancelled,
+	#pem_event_details #pem_cancelled::before,
+	.pem-registrations-page .tablenav-pages .page-numbers {
+		transition: none;
+	}
+}
