@@ -4,7 +4,7 @@ This document is a repeatable manual demonstration checklist. It does not contai
 
 ## 1. Setup
 
-- Activate Production Events Manager.
+- Activate Events Manager Custom.
 - Confirm the **Events** menu is available.
 - Confirm the registration table exists.
 

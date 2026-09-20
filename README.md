@@ -1,6 +1,6 @@
-# Production Events Manager
+# Events Manager Custom
 
-Production Events Manager is a custom WordPress plugin for creating events, publishing an upcoming-events archive, displaying event lifecycle information, accepting public registrations, and managing registrations from the WordPress admin.
+Events Manager Custom is a custom WordPress plugin for creating events, publishing an upcoming-events archive, displaying event lifecycle information, accepting public registrations, and managing registrations from the WordPress admin.
 
 ## Features
 
@@ -29,7 +29,7 @@ Atomic capacity enforcement relies on transactional database behavior and row lo
 ## Installation
 
 1. Copy the `production-events-manager` directory into `wp-content/plugins/`.
-2. Activate **Production Events Manager** from **Plugins → Installed Plugins**.
+2. Activate **Events Manager Custom** from **Plugins → Installed Plugins**.
 3. Go to **Events** and create an event.
 4. Add a venue, event dates, capacity, and optional registration closing time.
 5. Publish the event.

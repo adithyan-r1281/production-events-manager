@@ -2,7 +2,7 @@
 
 ## Overview
 
-Production Events Manager follows a small service/repository architecture around WordPress's native post, taxonomy, metadata, REST, and admin APIs.
+Events Manager Custom follows a small service/repository architecture around WordPress's native post, taxonomy, metadata, REST, and admin APIs.
 
 The plugin separates event presentation and lifecycle rules from registration persistence and public registration handling.
 

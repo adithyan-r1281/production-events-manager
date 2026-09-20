@@ -1,4 +1,4 @@
-=== Production Events Manager ===
+=== Events Manager Custom ===
 Contributors: adithyan-r1281
 Tags: events, event management, registrations, custom post type
 Stable tag: 1.0.5
@@ -9,7 +9,7 @@ A custom WordPress events manager with timezone-aware event lifecycle handling, 
 
 == Description ==
 
-Production Events Manager provides a custom event management workflow for WordPress.
+Events Manager Custom provides a custom event management workflow for WordPress.
 
 Features include:
 
